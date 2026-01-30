@@ -1,4 +1,4 @@
-  /*********************************************************************
+/*********************************************************************
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2012, Willow Garage, Inc.
@@ -35,12 +35,11 @@
 /* Author: Ioan Sucan */
 /* Author: Dinesh Thakur - Modified for waypoint navigation */
 
-//READ THIS NOTICE BEFORE YOU DO ANYTHING RIGHT NOW!!!!!!!
+// READ THIS NOTICE BEFORE YOU DO ANYTHING RIGHT NOW!!!!!!!
 
-//WE CAN NOT USE OGRE VECTOR operations in waypoint_nav_frame.cpp
-//DO ALL OGRE OPERATIONS IN waypoint_nav_tool.cpp FIRST OR COMMAND IN TOOL
-//I AM SERIOUS IT IS YOUR OWN FAULT IF YOU DON'T READ THIS NOTICES
-
+// WE CAN NOT USE OGRE VECTOR operations in waypoint_nav_frame.cpp
+// DO ALL OGRE OPERATIONS IN waypoint_nav_tool.cpp FIRST OR COMMAND IN TOOL
+// I AM SERIOUS IT IS YOUR OWN FAULT IF YOU DON'T READ THIS NOTICES
 
 #ifndef KR_RVIZ_PLUGIN_WAYPOINT_FRAME_
 #define KR_RVIZ_PLUGIN_WAYPOINT_FRAME_
@@ -49,78 +48,75 @@
 #include <boost/thread/mutex.hpp>
 #endif
 
-#include <QWidget>
-#include <iostream>
 #include "gnuplot.h"
 #include "rclcpp/rclcpp.hpp"
+#include "ui_WaypointNavigation.h"
+#include <Eigen/Sparse>
+#include <QWidget>
+#include <iostream>
 #include <nav_msgs/msg/path.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <std_srvs/srv/empty.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
-#include <std_srvs/srv/empty.hpp>
-#include <Eigen/Sparse>
-#include "ui_WaypointNavigation.h"
-//#include <OGRE/OgreVector3.h>
-#include <visualization_msgs/msg/marker_array.hpp>
-#include <rosbag2_cpp/writer.hpp>
-#include <rosbag2_cpp/reader.hpp>
-#include <rclcpp/serialization.hpp>
-#include <rosbag2_storage/storage_options.hpp>
-#include <OgrePrerequisites.h>
-#include "tf2_ros/transform_listener.h"
+// #include <OGRE/OgreVector3.h>
 #include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
 #include <Eigen/Geometry>
+#include <OgrePrerequisites.h>
+#include <rclcpp/serialization.hpp>
+#include <rosbag2_cpp/reader.hpp>
+#include <rosbag2_cpp/writer.hpp>
+#include <rosbag2_storage/storage_options.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 typedef struct {
-    int derivOrder, vertexNum;
-    Eigen::Vector4d lower, upper;
-    bool enable; //Declares wether this constraint is active or not
+  int derivOrder, vertexNum;
+  Eigen::Vector4d lower, upper;
+  bool enable; // Declares wether this constraint is active or not
 } waypoint_ineq_const;
 
-static const std::string Deriv_title[5] = { "'Pos'", "'Vel'", "'accel'", "'jerk'" , "'snap'"};
-static const std::string append[5] = { "Pos", "Vel", "accel", "jerk" , "snap"};
+static const std::string Deriv_title[5] = {"'Pos'", "'Vel'", "'accel'",
+                                           "'jerk'", "'snap'"};
+static const std::string append[5] = {"Pos", "Vel", "accel", "jerk", "snap"};
 
-namespace Ogre
-{
-//class SceneNode;
-//class Vector3;
-//class SceneManager;
-//class Quaternion;
+namespace Ogre {
+// class SceneNode;
+// class Vector3;
+// class SceneManager;
+// class Quaternion;
 }
 
-namespace rviz_common
-{
+namespace rviz_common {
 class DisplayContext;
 }
 
-namespace interactive_markers
-{
+namespace interactive_markers {
 class InteractiveMarkerServer;
 }
 
-namespace Ui
-{
+namespace Ui {
 class WaypointNavigationWidget;
 }
 
-namespace waypoint_nav_plugin
-{
+namespace waypoint_nav_plugin {
 class WaypointNavTool;
 }
 
-namespace waypoint_nav_plugin
-{
+namespace waypoint_nav_plugin {
 
-class WaypointFrame : public QWidget
-{
+class WaypointFrame : public QWidget {
   friend class WaypointNavTool;
   Q_OBJECT
 
 public:
-  WaypointFrame(rviz_common::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr,
-   interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *parent = 0, WaypointNavTool* wp_tool=0);
+  WaypointFrame(rviz_common::DisplayContext *context,
+                std::map<int, Ogre::SceneNode *> *map_ptr,
+                interactive_markers::InteractiveMarkerServer *server,
+                int *unique_ind, QWidget *parent = 0,
+                WaypointNavTool *wp_tool = 0);
   ~WaypointFrame();
-  interactive_markers::InteractiveMarkerServer* server_;
+  interactive_markers::InteractiveMarkerServer *server_;
 
   void enable();
   void disable();
@@ -131,28 +127,26 @@ public:
   void setSelectedMarkerName(std::string name);
   void setPose(Eigen::Vector3f position, Eigen::Vector4f quat);
 
-
   bool getTopicOveride();
   bool getBernEnable();
-  
+
   double getDefaultHeight();
   double getTime();
   bool get2Ddisplay();
   QString getFrameId();
   QString getOutputTopic();
-  void getPose(Eigen::Vector3f * position, Eigen::Vector4f * quat);
+  void getPose(Eigen::Vector3f *position, Eigen::Vector4f *quat);
   void display_corridros();
-  void setLimit(Eigen::Vector4d& upper, Eigen::Vector4d& lower, bool enable);
+  void setLimit(Eigen::Vector4d &upper, Eigen::Vector4d &lower, bool enable);
   std::vector<waypoint_ineq_const> ineq_list;
   void push_newIneq_const();
-  void ineqChanged(double val,int mode, int axis);
+  void ineqChanged(double val, int mode, int axis);
   Eigen::Quaternionf getQuatTransform();
   bool getLocalFrameStatus();
 
 protected:
-
   Ui::WaypointNavigationWidget *ui_;
-  rviz_common::DisplayContext* context_;
+  rviz_common::DisplayContext *context_;
 
 private Q_SLOTS:
   void publishButtonClicked();
@@ -168,15 +162,14 @@ private Q_SLOTS:
   void topicChanged();
   void poseChanged(double val);
 
-
-  //void rollChanged(double val);
-  //void pitchChanged(double val);
+  // void rollChanged(double val);
+  // void pitchChanged(double val);
 
   void saveButtonClicked();
   void loadButtonClicked();
   void perchClicked();
 
-  //Buttons RQT MAV MANAGER
+  // Buttons RQT MAV MANAGER
   void motors_on_push_button();
   void motors_off_push_button();
   void land_push_button();
@@ -191,10 +184,9 @@ private Q_SLOTS:
   void clear_map();
   void clear_path();
   void tf2_callback();
-   //Bernstein Check boxes
+  // Bernstein Check boxes
 
-
-  //Inequality cahgned for each double box
+  // Inequality cahgned for each double box
   /*
   void pl_ineqChanged(double val);
   void xl_ineqChanged(double val);
@@ -210,48 +202,49 @@ private Q_SLOTS:
 private:
   rclcpp::Node::SharedPtr node;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr wp_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_corridor_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr
+      pub_corridor_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr path_clear_pub_;
   rclcpp::TimerBase::SharedPtr timer_{nullptr};
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-  
-  //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ path_listen_;
-  //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ vel_listen_;
-  //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ acc_listen_;
 
- // void display(const nav_msgs::msg::Path &msg, int index);
+  // rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_
+  // path_listen_; rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr
+  // odom_sub_ vel_listen_;
+  // rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_
+  // acc_listen_;
+
+  // void display(const nav_msgs::msg::Path &msg, int index);
 
   rclcpp::Serialization<nav_msgs::msg::Path> serialization_;
-  WaypointNavTool* wp_nav_tool_;
-  //pointers passed via contructor
-  std::map<int, Ogre::SceneNode* >* sn_map_ptr_;
-  Ogre::SceneManager* scene_manager_;
-  int* unique_ind_;
+  WaypointNavTool *wp_nav_tool_;
+  // pointers passed via contructor
+  std::map<int, Ogre::SceneNode *> *sn_map_ptr_;
+  Ogre::SceneManager *scene_manager_;
+  int *unique_ind_;
 
-
-  //default height the waypoint must be placed at
+  // default height the waypoint must be placed at
   double default_height_;
-  double total_time_ = 0.0; //Jeff Addition Total Time of waypopints
+  double total_time_ = 0.0; // Jeff Addition Total Time of waypopints
   double yaw_init_ = 0.0;
-  bool display_2D = false; // Jeff additional boolean 
+  bool display_2D = false; // Jeff additional boolean
   bool relative_ = true;
   bool bern_enable_ = false;
   bool replan_enable_ = false;
   bool topicOverride = false;
-  double roll_=0.0;
-  double pitch_=0.0;
+  double roll_ = 0.0;
+  double pitch_ = 0.0;
 
   // The current name of the output topic.
   QString output_topic_;
   QString frame_id_;
 
-
   // The current name of the output topic.
   std::string robot_name = "quadrotor";
   std::string mav_node_name = "mav_services";
 
-  //mutex for changes of variables
+  // mutex for changes of variables
   boost::mutex frame_updates_mutex_;
   visualization_msgs::msg::MarkerArray marker_array;
   std::string selected_marker_name_;
@@ -260,6 +253,6 @@ private:
   bool local_frame_ = false;
 };
 
-}
+} // namespace waypoint_nav_plugin
 
 #endif

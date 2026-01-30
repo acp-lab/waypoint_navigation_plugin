@@ -32,19 +32,19 @@
 #ifndef WAYPOINT_NAV_FLAG_TOOL_H
 #define WAYPOINT_NAV_FLAG_TOOL_H
 
-#include <rviz_common/panel.hpp>
 #include "interactive_markers/interactive_marker_server.hpp"
 #include "interactive_markers/menu_handler.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "visualization_msgs/msg/marker.hpp"
 #include "visualization_msgs/msg/interactive_marker.hpp"
 #include "visualization_msgs/msg/interactive_marker_feedback.hpp"
+#include "visualization_msgs/msg/marker.hpp"
 #include <rcutils/logging_macros.h>
+#include <rviz_common/panel.hpp>
 #include <rviz_common/tool.hpp>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
-//#include <OGRE/OgreVector3.h>
+// #include <OGRE/OgreVector3.h>
 #include <OgrePrerequisites.h>
 
 #include <thread>
@@ -59,13 +59,11 @@
 **/
 using std::placeholders::_1;
 #include "waypoint_nav_frame_ros2.hpp"
-namespace rviz_common::properties
-{
+namespace rviz_common::properties {
 class VectorProperty;
 }
 
-namespace rviz_common
-{
+namespace rviz_common {
 class VisualizationManager;
 class ViewportMouseEvent;
 class PanelDockWidget;
@@ -73,22 +71,17 @@ class render_panel;
 class display_context;
 class panel;
 class WindowManagerInterface;
-}
+} // namespace rviz_common
 
-
-
-namespace Ui
-{
+namespace Ui {
 class QuadrotorSteeringWidget;
 }
 
-namespace waypoint_nav_plugin
-{
+namespace waypoint_nav_plugin {
 
-class WaypointNavTool: public rviz_common::Tool
-{
+class WaypointNavTool : public rviz_common::Tool {
 
-Q_OBJECT
+  Q_OBJECT
 public:
   WaypointNavTool();
   ~WaypointNavTool();
@@ -98,46 +91,49 @@ public:
   virtual void activate();
   virtual void deactivate();
 
-  virtual int processMouseEvent(rviz_common::ViewportMouseEvent& event);
+  virtual int processMouseEvent(rviz_common::ViewportMouseEvent &event);
 
-  virtual void load(const rviz_common::Config& config);
+  virtual void load(const rviz_common::Config &config);
   virtual void save(rviz_common::Config config) const;
-  void makeIm(const Ogre::Vector3& position, const Ogre::Quaternion& quat);
+  void makeIm(const Ogre::Vector3 &position, const Ogre::Quaternion &quat);
   void spin();
-  bool setServerPose(int index, Eigen::Vector3f pos_eigen, Eigen::Vector4f quat_eigen);
-  //CLEAR
+  bool setServerPose(int index, Eigen::Vector3f pos_eigen,
+                     Eigen::Vector4f quat_eigen);
+  // CLEAR
   void clearAllWaypoints();
-  //SAVE
+  // SAVE
   void savePoints(std::string filn);
-  //Load
+  // Load
   void loadPoints(std::string filn);
-  //GET GEOMETRY MSGS PATH
+  // GET GEOMETRY MSGS PATH
   nav_msgs::msg::Path getPath();
 
 private:
-  void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr & feedback);
+  void processFeedback(
+      const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr
+          &feedback);
   void getMarkerPoses();
 
-  Ogre::SceneNode* moving_flag_node_;
+  Ogre::SceneNode *moving_flag_node_;
   std::string flag_resource_;
 
   // the waypoint nav Qt frame
   WaypointFrame *frame_;
   //
   bool first_time_ = true;
-  rviz_common::PanelDockWidget* frame_dock_;
+  rviz_common::PanelDockWidget *frame_dock_;
 
-  interactive_markers::InteractiveMarkerServer * server_;
+  interactive_markers::InteractiveMarkerServer *server_;
   interactive_markers::MenuHandler menu_handler_;
 
-  //map that stores waypoints based on unique names
-  typedef std::map<int, Ogre::SceneNode* > M_StringToSNPtr;
+  // map that stores waypoints based on unique names
+  typedef std::map<int, Ogre::SceneNode *> M_StringToSNPtr;
   M_StringToSNPtr sn_map_;
-  rviz_common::properties::VectorProperty * current_flag_property_;
+  rviz_common::properties::VectorProperty *current_flag_property_;
   rclcpp::Node::SharedPtr nh_;
-  //index used for creating unique marker names
-  int unique_ind_; 
-  std::shared_ptr<std::thread>  thread_;
+  // index used for creating unique marker names
+  int unique_ind_;
+  std::shared_ptr<std::thread> thread_;
   rclcpp::executors::StaticSingleThreadedExecutor exec_;
 };
 
