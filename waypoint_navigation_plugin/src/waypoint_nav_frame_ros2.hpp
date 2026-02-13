@@ -174,6 +174,7 @@ private Q_SLOTS:
   void motors_off_push_button();
   void land_push_button();
   void takeoff_push_button();
+  void lissajous_push_button();
   void goto_push_button();
   void relativeChanged(int b);
   void originChanged(int b);

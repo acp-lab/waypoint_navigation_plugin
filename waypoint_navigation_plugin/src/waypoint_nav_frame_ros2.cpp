@@ -47,6 +47,8 @@
 #include <QFileDialog>
 #include <boost/foreach.hpp>
 #include <mav_manager_srv/srv/vec4.hpp>
+#include <mav_manager_srv/srv/lissajous.hpp>
+
 #define foreach BOOST_FOREACH
 
 namespace waypoint_nav_plugin {
@@ -138,6 +140,9 @@ WaypointFrame::WaypointFrame(
   connect(ui_->clear_path, SIGNAL(clicked()), this, SLOT(clear_path()));
 
   connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
+
+  connect(ui_->lissajous_push_button, SIGNAL(clicked()), this,
+        SLOT(lissajous_push_button()));
 
   node->declare_parameter("/" + robot_name + "/" + "replan", false);
   node->declare_parameter("/" + robot_name + "/" + "bern_enable", false);
@@ -791,6 +796,43 @@ void WaypointFrame::takeoff_push_button() {
               300)) == rclcpp::FutureReturnCode::SUCCESS) {
     RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
   } else {
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());
+  }
+}
+
+void WaypointFrame::lissajous_push_button()
+{
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+
+  std::string srvs_name = "/" + robot_name + "/" + mav_node_name + "/lissajous";
+  auto client = node->create_client<mav_manager_srv::srv::Lissajous>(srvs_name);
+
+  auto request = std::make_shared<mav_manager_srv::srv::Lissajous::Request>();
+
+  // Hard-coded defaults (edit to match what you like)
+  request->x_amp = 3.0;
+  request->y_amp = 1.5;
+  request->z_amp = 0.5;
+  request->x_num_periods = 1.0;
+  request->y_num_periods = 2.0;
+  request->z_num_periods = 1.0;
+  request->yaw_num_periods = 0.0;
+  request->period = 4.0;
+  request->num_cycles = 6.0;
+  request->ramp_time = 6.0;
+
+  auto result = client->async_send_request(request);
+  RCLCPP_INFO(node->get_logger(), "Sent Lissajous Service");
+
+  if (rclcpp::spin_until_future_complete(
+          node->get_node_base_interface(), result,
+          std::chrono::duration<int64_t, std::milli>(300)) ==
+      rclcpp::FutureReturnCode::SUCCESS)
+  {
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+  }
+  else
+  {
     RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());
   }
 }

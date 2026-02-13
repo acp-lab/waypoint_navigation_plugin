@@ -24,6 +24,13 @@
      </property>
     </widget>
    </item>
+  <item row="35" column="0" colspan="5">
+  <widget class="QPushButton" name="lissajous_push_button">
+    <property name="text">
+      <string>Lissajous</string>
+    </property>
+  </widget>
+  </item>
    <item row="3" column="0" colspan="5">
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
